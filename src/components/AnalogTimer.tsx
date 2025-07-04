@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 
 const RADIUS = 90;
-const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 const CENTER = 110;
 const CLOCK_DURATION = 60 * 60; // 60 minutes (in seconds)
 
@@ -41,26 +40,6 @@ export const AnalogTimer: React.FC<{ totalSeconds: number }> = ({ totalSeconds }
     }
   }, [elapsedSeconds, totalSeconds, dinged]);
 
-  const angle = (elapsedSeconds / CLOCK_DURATION) * 360;
-  const targetAngle = (totalSeconds / CLOCK_DURATION) * 360;
-  const remainingAngle = Math.max(targetAngle - angle, 0);
-  const overtimeAngle = Math.max(angle - targetAngle, 0);
-
-  const describeArc = (startAngle: number, endAngle: number, color: string) => {
-    const start = polarToCartesian(CENTER, CENTER, RADIUS, endAngle);
-    const end = polarToCartesian(CENTER, CENTER, RADIUS, startAngle);
-    const largeArcFlag = endAngle - startAngle <= 180 ? '0' : '1';
-    return (
-      <path
-        d={`M ${start.x} ${start.y} A ${RADIUS} ${RADIUS} 0 ${largeArcFlag} 0 ${end.x} ${end.y}`}
-        fill="none"
-        stroke={color}
-        strokeWidth="12"
-        strokeLinecap="round"
-      />
-    );
-  };
-
   const polarToCartesian = (centerX: number, centerY: number, radius: number, angleInDegrees: number) => {
     const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180.0;
     return {
@@ -69,14 +48,25 @@ export const AnalogTimer: React.FC<{ totalSeconds: number }> = ({ totalSeconds }
     };
   };
 
+  const describeSector = (startAngle: number, endAngle: number, color: string) => {
+    const start = polarToCartesian(CENTER, CENTER, RADIUS, 360 - startAngle);
+    const end = polarToCartesian(CENTER, CENTER, RADIUS, 360 - endAngle);
+    const largeArcFlag = endAngle - startAngle <= 180 ? '0' : '1';
+    return (
+      <path
+        d={`M ${CENTER} ${CENTER} L ${start.x} ${start.y} A ${RADIUS} ${RADIUS} 0 ${largeArcFlag} 0 ${end.x} ${end.y} Z`}
+        fill={color}
+      />
+    );
+  };
+
   const renderClockMarks = () => {
     const marks = [];
     for (let i = 0; i < 60; i++) {
-      const angle = (i * 6) - 90; // Each minute is 6 degrees
+      const angle = i * 6;
       const isHour = i % 5 === 0;
-      const inner = polarToCartesian(CENTER, CENTER, RADIUS - (isHour ? 12 : 6), i * 6);
-      const outer = polarToCartesian(CENTER, CENTER, RADIUS + 6, i * 6);
-
+      const inner = polarToCartesian(CENTER, CENTER, RADIUS - (isHour ? 12 : 6), 360 - angle);
+      const outer = polarToCartesian(CENTER, CENTER, RADIUS + 6, 360 - angle);
       marks.push(
         <line
           key={i}
@@ -95,8 +85,8 @@ export const AnalogTimer: React.FC<{ totalSeconds: number }> = ({ totalSeconds }
   const renderClockNumbers = () => {
     const numbers = [];
     for (let i = 0; i < 12; i++) {
-      const angle = i * 30 - 60;
-      const pos = polarToCartesian(CENTER, CENTER, RADIUS - 24, i * 30);
+      const angle = i * 30;
+      const pos = polarToCartesian(CENTER, CENTER, RADIUS - 24, 360 - angle);
       numbers.push(
         <text
           key={i}
@@ -113,22 +103,29 @@ export const AnalogTimer: React.FC<{ totalSeconds: number }> = ({ totalSeconds }
     return numbers;
   };
 
+  const targetAngle = (totalSeconds / CLOCK_DURATION) * 360;
+  const angleElapsed = (elapsedSeconds / CLOCK_DURATION) * 360;
+  const remainingAngle = Math.max(targetAngle - angleElapsed, 0);
+  const overtimeAngle = Math.max(angleElapsed - targetAngle, 0);
+
   return (
     <div className="flex flex-col items-center justify-center">
       <audio ref={audioRef} src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" preload="auto" />
       <svg width="220" height="220" className="mb-4">
-        {/* Clock background */}
-        <circle cx={CENTER} cy={CENTER} r={RADIUS} stroke="#eee" strokeWidth="12" fill="none" />
+        {/* Green sector for remaining time */}
+        {remaining > 0 && describeSector(0, remainingAngle, 'green')}
+        {/* Red sector for overtime */}
+        {overtime > 0 && describeSector(0, overtimeAngle, 'red')}
 
-        {/* Remaining time - green arc */}
-        {remaining > 0 && describeArc(0, remainingAngle, 'green')}
+        {/* Clock outline */}
+        <circle cx={CENTER} cy={CENTER} r={RADIUS} stroke="#ccc" strokeWidth="2" fill="white" />
 
-        {/* Overtime - red arc */}
-        {overtime > 0 && describeArc(0, overtimeAngle, 'red')}
-
-        {/* Clock face marks and numbers */}
+        {/* Clock face */}
         {renderClockMarks()}
         {renderClockNumbers()}
+
+        {/* Center knob mimic */}
+        <circle cx={CENTER} cy={CENTER} r={8} fill="#bbb" />
       </svg>
 
       <div className="text-2xl font-mono mb-4">
