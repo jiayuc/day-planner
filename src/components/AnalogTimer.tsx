@@ -85,6 +85,8 @@ export const AnalogTimer: React.FC<{ totalSeconds: number }> = ({ totalSeconds }
   const renderClockNumbers = () => {
     const numbers = [];
     for (let i = 0; i < 12; i++) {
+      // Counter-clockwise numbering: 0, 5, 10, ..., 55
+      const value = (i * 5) % 60;
       const angle = i * 30;
       const pos = polarToCartesian(CENTER, CENTER, RADIUS - 24, 360 - angle);
       numbers.push(
@@ -96,37 +98,64 @@ export const AnalogTimer: React.FC<{ totalSeconds: number }> = ({ totalSeconds }
           fontSize="12"
           fill="#333"
         >
-          {i * 5 === 0 ? '0' : i * 5}
+          {value === 0 ? '0' : value}
         </text>
       );
     }
     return numbers;
   };
 
-  const targetAngle = (totalSeconds / CLOCK_DURATION) * 360;
-  const angleElapsed = (elapsedSeconds / CLOCK_DURATION) * 360;
-  const remainingAngle = Math.max(targetAngle - angleElapsed, 0);
-  const overtimeAngle = Math.max(angleElapsed - targetAngle, 0);
+
+  // Canvas drawing for green sector (remaining time)
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    // Clear
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Only draw if totalSeconds > 0 and remaining > 0
+    if (totalSeconds > 0 && remaining > 0) {
+      // The green sector should start at 0 (top, -90deg) and end at the minute mark (counter-clockwise)
+      // Each minute is 6 degrees (360/60)
+      const startAngle = -Math.PI / 2; // 0 min (top)
+      const endMinute = remaining / 60; // e.g. 20 min left
+      const endAngle = startAngle - (endMinute * 6 * Math.PI / 180); // counter-clockwise
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(CENTER, CENTER);
+      ctx.arc(CENTER, CENTER, RADIUS, startAngle, endAngle, true); // counter-clockwise
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(34,197,94,0.85)';
+      ctx.fill();
+      ctx.restore();
+    }
+  }, [remaining, totalSeconds]);
 
   return (
     <div className="flex flex-col items-center justify-center">
       <audio ref={audioRef} src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" preload="auto" />
-      <svg width="220" height="220" className="mb-4">
-        {/* Green sector for remaining time */}
-        {remaining > 0 && describeSector(0, remainingAngle, 'green')}
-        {/* Red sector for overtime */}
-        {overtime > 0 && describeSector(0, overtimeAngle, 'red')}
-
-        {/* Clock outline */}
-        <circle cx={CENTER} cy={CENTER} r={RADIUS} stroke="#ccc" strokeWidth="2" fill="white" />
-
-        {/* Clock face */}
-        {renderClockMarks()}
-        {renderClockNumbers()}
-
-        {/* Center knob mimic */}
-        <circle cx={CENTER} cy={CENTER} r={8} fill="#bbb" />
-      </svg>
+      <div style={{ position: 'relative', width: 220, height: 220 }} className="mb-4">
+        {/* SVG for clock face and marks (z-index: 2) */}
+        <svg width="220" height="220" style={{ position: 'absolute', left: 0, top: 0, zIndex: 2, pointerEvents: 'none' }}>
+          {/* Clock outline */}
+          <circle cx={CENTER} cy={CENTER} r={RADIUS} stroke="#ccc" strokeWidth="2" fill="white" />
+          {/* Clock face */}
+          {renderClockMarks()}
+          {renderClockNumbers()}
+          {/* Center knob mimic */}
+          <circle cx={CENTER} cy={CENTER} r={8} fill="#bbb" />
+        </svg>
+        {/* Canvas for green sector (z-index: 3, on top) */}
+        <canvas
+          ref={canvasRef}
+          width={220}
+          height={220}
+          style={{ position: 'absolute', left: 0, top: 0, zIndex: 3, pointerEvents: 'none' }}
+        />
+      </div>
 
       <div className="text-2xl font-mono mb-4">
         {remaining > 0 ? formatTime(remaining) : `+${formatTime(overtime)}`}
