@@ -17,15 +17,50 @@ const DARK_RED_COLOR = 'rgb(221, 85, 85)';
 
 const CLOCK_FONT = 'Figtree, sans-serif';
 
-export const AnalogTimer: React.FC<{ totalSeconds: number }> = ({ totalSeconds }) => {
+export const AnalogTimer: React.FC<{ totalSeconds?: number }> = ({ totalSeconds: initialTotalSeconds = 1500 }) => {
+  const [totalSeconds, setTotalSeconds] = useState(initialTotalSeconds); // allow user to set
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [running, setRunning] = useState(false);
   const [dinged, setDinged] = useState(false);
+  const [dragging, setDragging] = useState(false);
   const intervalRef = useRef<number | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const remaining = Math.max(totalSeconds - elapsedSeconds, 0);
   const overtime = Math.max(elapsedSeconds - totalSeconds, 0);
+  // Helper: get angle (deg) from mouse position
+  const getAngleFromMouse = (clientX: number, clientY: number) => {
+    const rect = document.getElementById('timer-interactive-layer')?.getBoundingClientRect();
+    if (!rect) return null;
+    const x = clientX - rect.left - CENTER;
+    const y = clientY - rect.top - CENTER;
+    let angle = Math.atan2(y, x) * 180 / Math.PI;
+    angle = angle < -90 ? 450 + angle : angle + 90; // 0 at top, clockwise
+    return angle;
+  };
+
+  // Mouse/touch drag handlers
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if (running) return;
+    setDragging(true);
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  };
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!dragging || running) return;
+    const angle = getAngleFromMouse(e.clientX, e.clientY);
+    if (angle === null) return;
+    // Clamp to [0, 360]
+    const clamped = Math.max(0, Math.min(360, angle));
+    // Convert angle to minutes (counter-clockwise from top)
+    const minutes = Math.round((60 - clamped / 6) % 60);
+    setTotalSeconds(minutes * 60 || 60); // never allow 0
+    setElapsedSeconds(0);
+    setDinged(false);
+  };
+  const handlePointerUp = (e: React.PointerEvent) => {
+    setDragging(false);
+    (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+  };
 
   useEffect(() => {
     if (running) {
@@ -67,8 +102,8 @@ export const AnalogTimer: React.FC<{ totalSeconds: number }> = ({ totalSeconds }
     );
   };
 
-  const renderClockMarks = () => {
-    const marks = [];
+  const renderClockMarks = (): React.ReactNode[] => {
+    const marks: React.ReactNode[] = [];
     for (let i = 0; i < 60; i++) {
       const angle = i * 6;
       const isHour = i % 5 === 0;
@@ -90,8 +125,8 @@ export const AnalogTimer: React.FC<{ totalSeconds: number }> = ({ totalSeconds }
     return marks;
   };
 
-  const renderClockNumbers = () => {
-    const numbers = [];
+  const renderClockNumbers = (): React.ReactNode[] => {
+    const numbers: React.ReactNode[] = [];
     for (let i = 0; i < 12; i++) {
       // Counter-clockwise numbering: 0, 5, 10, ..., 55
       const value = (i * 5) % 60;
@@ -161,7 +196,14 @@ export const AnalogTimer: React.FC<{ totalSeconds: number }> = ({ totalSeconds }
     <div className="flex flex-col items-center justify-center">
       <audio ref={audioRef} src="/sounds/timer_up_sound.mp3" preload="auto" />
 
-      <div style={{ position: 'relative', width: 370, height: 370, overflow: 'visible' }} className="mb-8">
+      <div
+        id="timer-interactive-layer"
+        style={{ position: 'relative', width: 370, height: 370, overflow: 'visible', touchAction: 'none' }}
+        className="mb-8"
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+      >
         {/* 1. SVG for clock face and marks (lowest layer) */}
         <svg width="370" height="370" style={{ position: 'absolute', left: 0, top: 0, zIndex: 1, pointerEvents: 'none', overflow: 'visible' }}>
           {/* Clock outline */}
@@ -180,26 +222,23 @@ export const AnalogTimer: React.FC<{ totalSeconds: number }> = ({ totalSeconds }
 
         {/* 3. SVG for center knob and needle (topmost layer) */}
         <svg width="370" height="370" style={{ position: 'absolute', left: 0, top: 0, zIndex: 3, pointerEvents: 'none', overflow: 'visible' }}>
-          {/* Needle pointing to current edge of green or red sector */}
+          {/* Needle and knob, plus drag handle for setting timer */}
           {(() => {
-            // Extract color logic for both needle and knob
             const getNeedleAndKnobColor = () => (remaining > 0 ? DARK_GREEN_COLOR : DARK_RED_COLOR);
             let angle;
             if (remaining > 0) {
-              // Green needle for remaining time
               angle = -90 - (remaining / 60) * 6;
             } else if (overtime > 0) {
-              // Red needle for overtime, follows the edge of the red sector
               angle = -90 + (overtime / 60) * 6;
             } else {
-              // Before start
               angle = -90;
             }
             const color = getNeedleAndKnobColor();
             const rad = (angle * Math.PI) / 180;
-            const needleLength = 15;
+            const needleLength = 17;
             const x = CENTER + needleLength * Math.cos(rad);
             const y = CENTER + needleLength * Math.sin(rad);
+            // Drag handle: only show when not running
             return (
               <>
                 <line
@@ -208,11 +247,22 @@ export const AnalogTimer: React.FC<{ totalSeconds: number }> = ({ totalSeconds }
                   x2={x}
                   y2={y}
                   stroke={color}
-                  strokeWidth={4}
+                  strokeWidth={3}
                   strokeLinecap="round"
                 />
                 {/* Center knob mimic, color changes after timer is up */}
-                <circle cx={CENTER} cy={CENTER} r={10} fill={color} stroke="#fff" strokeWidth="1" />
+                <circle cx={CENTER} cy={CENTER} r={10} fill={color} stroke="#fff" strokeWidth="0.5" />
+                {!running && (
+                  <circle
+                    cx={x}
+                    cy={y}
+                    r={12}
+                    fill="#fff"
+                    stroke={color}
+                    strokeWidth={2}
+                    style={{ cursor: 'pointer', opacity: 0.85 }}
+                  />
+                )}
               </>
             );
           })()}
