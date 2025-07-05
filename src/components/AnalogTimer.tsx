@@ -309,16 +309,29 @@ export const AnalogTimer: React.FC<{ totalSeconds?: number }> = ({ totalSeconds:
         >
           <span className="font-semibold tracking-wide">{running ? 'Pause' : 'Start'}</span>
         </button>
-        <button
-          className="relative bg-gray-200 text-gray-700 px-6 py-2 rounded shadow-md transition-all duration-150 hover:bg-gray-300 active:scale-95 active:shadow-inner focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
-          onClick={() => {
-            setRunning(false);
-            setElapsedSeconds(0);
-            setDinged(false);
-          }}
-        >
-          <span className="font-semibold tracking-wide">Reset</span>
-        </button>
+        {running ? (
+          <button
+            className="relative bg-green-500 text-white px-6 py-2 rounded-full shadow-md transition-all duration-150 hover:bg-green-600 active:scale-95 active:shadow-inner focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2"
+            onClick={() => {
+              setRunning(false);
+              setElapsedSeconds(0);
+              setDinged(false);
+            }}
+          >
+            <span className="font-semibold tracking-wide">End Session</span>
+          </button>
+        ) : (
+          <button
+            className="relative bg-gray-200 text-gray-700 px-6 py-2 rounded shadow-md transition-all duration-150 hover:bg-gray-300 active:scale-95 active:shadow-inner focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
+            onClick={() => {
+              setRunning(false);
+              setElapsedSeconds(0);
+              setDinged(false);
+            }}
+          >
+            <span className="font-semibold tracking-wide">Reset</span>
+          </button>
+        )}
       </div>
     </div>
   );
