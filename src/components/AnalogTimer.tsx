@@ -116,27 +116,40 @@ export const AnalogTimer: React.FC<{ totalSeconds: number }> = ({ totalSeconds }
     // Clear
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Only draw if totalSeconds > 0 and remaining > 0
+    // Draw green sector if time remains
     if (totalSeconds > 0 && remaining > 0) {
-      // The green sector should start at 0 (top, -90deg) and end at the minute mark (counter-clockwise)
-      // Each minute is 6 degrees (360/60)
       const startAngle = -Math.PI / 2; // 0 min (top)
-      const endMinute = remaining / 60; // e.g. 20 min left
+      const endMinute = remaining / 60;
       const endAngle = startAngle - (endMinute * 6 * Math.PI / 180); // counter-clockwise
       ctx.save();
       ctx.beginPath();
       ctx.moveTo(CENTER, CENTER);
-      ctx.arc(CENTER, CENTER, RADIUS, startAngle, endAngle, true); // counter-clockwise
+      ctx.arc(CENTER, CENTER, RADIUS, startAngle, endAngle, true);
       ctx.closePath();
-      ctx.fillStyle = 'rgba(34,197,94,0.85)';
+      ctx.fillStyle = 'rgba(65, 169, 105, 0.85)';
       ctx.fill();
       ctx.restore();
     }
-  }, [remaining, totalSeconds]);
+    // Draw red sector if overtime
+    if (overtime > 0) {
+      const startAngle = -Math.PI / 2; // 0 min (top)
+      const overtimeMinute = Math.min(overtime / 60, 60); // cap at 60 min
+      const endAngle = startAngle + (overtimeMinute * 6 * Math.PI / 180); // clockwise
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(CENTER, CENTER);
+      ctx.arc(CENTER, CENTER, RADIUS, startAngle, endAngle, false); // clockwise
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(235, 118, 118, 0.85)'; // Tailwind red-500
+      ctx.fill();
+      ctx.restore();
+    }
+    // The effect should also depend on overtime, so the red sector updates as time passes after timer is up
+  }, [remaining, totalSeconds, overtime]);
 
   return (
     <div className="flex flex-col items-center justify-center">
-      <audio ref={audioRef} src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" preload="auto" />
+      <audio ref={audioRef} src="/sounds/timer_up_sound.mp3" preload="auto" />
       <div style={{ position: 'relative', width: 220, height: 220 }} className="mb-4">
         {/* SVG for clock face and marks (z-index: 2) */}
         <svg width="220" height="220" style={{ position: 'absolute', left: 0, top: 0, zIndex: 2, pointerEvents: 'none' }}>
