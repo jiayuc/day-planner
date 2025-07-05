@@ -193,12 +193,12 @@ export const AnalogTimer: React.FC<{ totalSeconds?: number }> = ({ totalSeconds:
   }, [remaining, totalSeconds, overtime]);
 
   return (
-    <div className="flex flex-col items-center justify-center">
+    <div className="flex flex-col items-center justify-center w-full">
       <audio ref={audioRef} src="/sounds/timer_up_sound.mp3" preload="auto" />
 
       <div
         id="timer-interactive-layer"
-        style={{ position: 'relative', width: 370, height: 370, overflow: 'visible', touchAction: 'none' }}
+        style={{ position: 'relative', width: 370, height: 370, overflow: 'visible', touchAction: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto' }}
         className="mb-8"
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
@@ -273,18 +273,16 @@ export const AnalogTimer: React.FC<{ totalSeconds?: number }> = ({ totalSeconds:
         {remaining > 0 ? formatTime(remaining) : `+${formatTime(overtime)}`}
       </div>
 
-      <div className="flex gap-4">
+      <div className="flex gap-4 justify-center items-center mt-2" style={{ width: 370 }}>
         <button
-          className="relative bg-green-500 text-white px-6 py-2 rounded-full shadow-md transition-all duration-150 hover:bg-green-600 active:scale-95 active:shadow-inner focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2"
-          onClick={() => setRunning(true)}
+          className={
+            running
+              ? "relative bg-yellow-500 text-white px-6 py-2 rounded-full shadow-md transition-all duration-150 hover:bg-yellow-600 active:scale-95 active:shadow-inner focus:outline-none focus:ring-2 focus:ring-yellow-600 focus:ring-offset-2"
+              : "relative bg-green-500 text-white px-6 py-2 rounded-full shadow-md transition-all duration-150 hover:bg-green-600 active:scale-95 active:shadow-inner focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2"
+          }
+          onClick={() => setRunning((r) => !r)}
         >
-          <span className="font-semibold tracking-wide">Start</span>
-        </button>
-        <button
-          className="relative bg-yellow-500 text-white px-6 py-2 rounded-full shadow-md transition-all duration-150 hover:bg-yellow-600 active:scale-95 active:shadow-inner focus:outline-none focus:ring-2 focus:ring-yellow-600 focus:ring-offset-2"
-          onClick={() => setRunning(false)}
-        >
-          <span className="font-semibold tracking-wide">Pause</span>
+          <span className="font-semibold tracking-wide">{running ? 'Pause' : 'Start'}</span>
         </button>
         <button
           className="relative bg-gray-200 text-gray-700 px-6 py-2 rounded shadow-md transition-all duration-150 hover:bg-gray-300 active:scale-95 active:shadow-inner focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
