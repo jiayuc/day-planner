@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useTaskContext } from './TaskContext';
 
 const RADIUS = 120;
 const CENTER = 150;
@@ -18,6 +19,7 @@ const DARK_RED_COLOR = 'rgb(221, 85, 85)';
 const CLOCK_FONT = 'Figtree, sans-serif';
 
 export const AnalogTimer: React.FC<{ totalSeconds?: number }> = ({ totalSeconds: initialTotalSeconds = 1500 }) => {
+  const { selectedId, startSession, endSession, isTaskOngoing } = useTaskContext();
   const [totalSeconds, setTotalSeconds] = useState(initialTotalSeconds); // allow user to set
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [running, setRunning] = useState(false);
@@ -61,6 +63,17 @@ export const AnalogTimer: React.FC<{ totalSeconds?: number }> = ({ totalSeconds:
     setDragging(false);
     (e.target as HTMLElement).releasePointerCapture(e.pointerId);
   };
+
+  // Track session for selected task
+  useEffect(() => {
+    if (running && selectedId != null && !isTaskOngoing) {
+      startSession(selectedId);
+    }
+    if (!running && selectedId != null && isTaskOngoing) {
+      endSession(selectedId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [running]);
 
   useEffect(() => {
     if (running) {
@@ -198,11 +211,23 @@ export const AnalogTimer: React.FC<{ totalSeconds?: number }> = ({ totalSeconds:
 
       <div
         id="timer-interactive-layer"
-        style={{ position: 'relative', width: 370, height: 370, overflow: 'visible', touchAction: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto' }}
         className="mb-8"
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
+        style={{
+          position: 'relative',
+          width: 370,
+          height: 370,
+          overflow: 'visible',
+          touchAction: 'none',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          margin: '0 auto',
+          ...(isTaskOngoing ? { pointerEvents: 'none', opacity: 0.7 } : {})
+        }}
+        onPointerDown={isTaskOngoing ? undefined : handlePointerDown}
+        onPointerMove={isTaskOngoing ? undefined : handlePointerMove}
+        onPointerUp={isTaskOngoing ? undefined : handlePointerUp}
+        aria-disabled={isTaskOngoing}
       >
         {/* 1. SVG for clock face and marks (lowest layer) */}
         <svg width="370" height="370" style={{ position: 'absolute', left: 0, top: 0, zIndex: 1, pointerEvents: 'none', overflow: 'visible' }}>
