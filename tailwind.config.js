@@ -8,6 +8,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ['Rubik', 'Figtree', 'system-ui', 'sans-serif'],
+        casual: ['Zain', 'system-ui', 'sans-serif'],
       },
     },
   },

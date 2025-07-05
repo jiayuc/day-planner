@@ -39,10 +39,10 @@ export const TaskList: React.FC = () => {
 
   return (
     <div
-      className="w-[410px] bg-white rounded-3xl shadow-xl p-8 flex flex-col gap-6 font-sans"
+      className="w-[410px] bg-white rounded-3xl shadow-xl p-8 flex flex-col gap-6 font-casual"
       style={{ minHeight: 520 }}
     >
-      <h2 className="text-2xl font-bold mb-1 text-gray-900 flex items-center gap-2">
+      <h2 className="text-2xl font-bold mb-1 text-gray-900 flex items-center gap-2 font-sans">
         To-Do List <span role="img" aria-label="emoji">📝</span>
       </h2>
       <div className="flex items-center gap-3 mb-2">
