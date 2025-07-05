@@ -11,6 +11,12 @@ const formatTime = (seconds: number) => {
 };
 
 const GREEN_COLOR = 'rgba(65, 169, 105, 0.85)';
+const DARK_GREEN_COLOR = 'rgb(43, 114, 70)';
+const RED_COLOR = 'rgb(235, 118, 118)';
+const DARK_RED_COLOR = 'rgb(221, 85, 85)';
+
+const CLOCK_FONT = 'Figtree, sans-serif';
+
 export const AnalogTimer: React.FC<{ totalSeconds: number }> = ({ totalSeconds }) => {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [running, setRunning] = useState(false);
@@ -100,7 +106,7 @@ export const AnalogTimer: React.FC<{ totalSeconds: number }> = ({ totalSeconds }
           textAnchor="middle"
           fontSize="15"
           fill="#222"
-          style={{ fontFamily: 'Figtree, sans-serif', letterSpacing: 1, fontWeight: 'normal' }}
+          style={{ fontFamily: CLOCK_FONT, letterSpacing: 1, fontWeight: 'normal' }}
         >
           {value === 0 ? '0' : value}
         </text>
@@ -144,7 +150,7 @@ export const AnalogTimer: React.FC<{ totalSeconds: number }> = ({ totalSeconds }
       ctx.moveTo(CENTER, CENTER);
       ctx.arc(CENTER, CENTER, RADIUS, startAngle, endAngle, false); // clockwise
       ctx.closePath();
-      ctx.fillStyle = 'rgba(235, 118, 118, 0.85)'; // Tailwind red-500
+      ctx.fillStyle = RED_COLOR; // Tailwind red-500
       ctx.fill();
       ctx.restore();
     }
@@ -154,24 +160,63 @@ export const AnalogTimer: React.FC<{ totalSeconds: number }> = ({ totalSeconds }
   return (
     <div className="flex flex-col items-center justify-center">
       <audio ref={audioRef} src="/sounds/timer_up_sound.mp3" preload="auto" />
+
       <div style={{ position: 'relative', width: 370, height: 370, overflow: 'visible' }} className="mb-8">
-        {/* SVG for clock face and marks (z-index: 2) */}
-        <svg width="370" height="370" style={{ position: 'absolute', left: 0, top: 0, zIndex: 2, pointerEvents: 'none', overflow: 'visible' }}>
+        {/* 1. SVG for clock face and marks (lowest layer) */}
+        <svg width="370" height="370" style={{ position: 'absolute', left: 0, top: 0, zIndex: 1, pointerEvents: 'none', overflow: 'visible' }}>
           {/* Clock outline */}
           <circle cx={CENTER} cy={CENTER} r={RADIUS} stroke="#e5e7eb" strokeWidth="4" fill="#fff" />
-          {/* Clock face */}
           {renderClockMarks()}
           {renderClockNumbers()}
-          {/* Center knob mimic */}
-          <circle cx={CENTER} cy={CENTER} r={10} fill={GREEN_COLOR} stroke="#fff" strokeWidth="1" />
         </svg>
-        {/* Canvas for green/red sector (z-index: 3, on top) */}
+
+        {/* 2. Canvas for green/red sector (middle layer) */}
         <canvas
           ref={canvasRef}
           width={370}
           height={370}
-          style={{ position: 'absolute', left: 0, top: 0, zIndex: 3, pointerEvents: 'none' }}
+          style={{ position: 'absolute', left: 0, top: 0, zIndex: 2, pointerEvents: 'none' }}
         />
+
+        {/* 3. SVG for center knob and needle (topmost layer) */}
+        <svg width="370" height="370" style={{ position: 'absolute', left: 0, top: 0, zIndex: 3, pointerEvents: 'none', overflow: 'visible' }}>
+          {/* Needle pointing to current edge of green or red sector */}
+          {(() => {
+            // Extract color logic for both needle and knob
+            const getNeedleAndKnobColor = () => (remaining > 0 ? DARK_GREEN_COLOR : DARK_RED_COLOR);
+            let angle;
+            if (remaining > 0) {
+              // Green needle for remaining time
+              angle = -90 - (remaining / 60) * 6;
+            } else if (overtime > 0) {
+              // Red needle for overtime, follows the edge of the red sector
+              angle = -90 + (overtime / 60) * 6;
+            } else {
+              // Before start
+              angle = -90;
+            }
+            const color = getNeedleAndKnobColor();
+            const rad = (angle * Math.PI) / 180;
+            const needleLength = 15;
+            const x = CENTER + needleLength * Math.cos(rad);
+            const y = CENTER + needleLength * Math.sin(rad);
+            return (
+              <>
+                <line
+                  x1={CENTER}
+                  y1={CENTER}
+                  x2={x}
+                  y2={y}
+                  stroke={color}
+                  strokeWidth={4}
+                  strokeLinecap="round"
+                />
+                {/* Center knob mimic, color changes after timer is up */}
+                <circle cx={CENTER} cy={CENTER} r={10} fill={color} stroke="#fff" strokeWidth="1" />
+              </>
+            );
+          })()}
+        </svg>
       </div>
 
       <div className="text-2xl font-mono mb-4">
