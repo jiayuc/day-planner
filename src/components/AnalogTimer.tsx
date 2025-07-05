@@ -273,22 +273,28 @@ export const AnalogTimer: React.FC<{ totalSeconds?: number }> = ({ totalSeconds:
         {remaining > 0 ? formatTime(remaining) : `+${formatTime(overtime)}`}
       </div>
 
-      <div className="space-x-4">
-        <button className="bg-green-500 text-white px-4 py-2 rounded" onClick={() => setRunning(true)}>
-          Start
-        </button>
-        <button className="bg-yellow-500 text-white px-4 py-2 rounded" onClick={() => setRunning(false)}>
-          Pause
+      <div className="flex gap-4">
+        <button
+          className="relative bg-green-500 text-white px-6 py-2 rounded-full shadow-md transition-all duration-150 hover:bg-green-600 active:scale-95 active:shadow-inner focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2"
+          onClick={() => setRunning(true)}
+        >
+          <span className="font-semibold tracking-wide">Start</span>
         </button>
         <button
-          className="bg-gray-300 px-4 py-2 rounded"
+          className="relative bg-yellow-500 text-white px-6 py-2 rounded-full shadow-md transition-all duration-150 hover:bg-yellow-600 active:scale-95 active:shadow-inner focus:outline-none focus:ring-2 focus:ring-yellow-600 focus:ring-offset-2"
+          onClick={() => setRunning(false)}
+        >
+          <span className="font-semibold tracking-wide">Pause</span>
+        </button>
+        <button
+          className="relative bg-gray-200 text-gray-700 px-6 py-2 rounded shadow-md transition-all duration-150 hover:bg-gray-300 active:scale-95 active:shadow-inner focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
           onClick={() => {
             setRunning(false);
             setElapsedSeconds(0);
             setDinged(false);
           }}
         >
-          Reset
+          <span className="font-semibold tracking-wide">Reset</span>
         </button>
       </div>
     </div>
