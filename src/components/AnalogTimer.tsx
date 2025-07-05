@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-const RADIUS = 90;
-const CENTER = 110;
+const RADIUS = 120;
+const CENTER = 150;
 const CLOCK_DURATION = 60 * 60; // 60 minutes (in seconds)
 
 const formatTime = (seconds: number) => {
@@ -10,6 +10,7 @@ const formatTime = (seconds: number) => {
   return `${m}:${s}`;
 };
 
+const GREEN_COLOR = 'rgba(65, 169, 105, 0.85)';
 export const AnalogTimer: React.FC<{ totalSeconds: number }> = ({ totalSeconds }) => {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [running, setRunning] = useState(false);
@@ -65,8 +66,9 @@ export const AnalogTimer: React.FC<{ totalSeconds: number }> = ({ totalSeconds }
     for (let i = 0; i < 60; i++) {
       const angle = i * 6;
       const isHour = i % 5 === 0;
-      const inner = polarToCartesian(CENTER, CENTER, RADIUS - (isHour ? 12 : 6), 360 - angle);
-      const outer = polarToCartesian(CENTER, CENTER, RADIUS + 6, 360 - angle);
+      // Move marks outside the clockface
+      const inner = polarToCartesian(CENTER, CENTER, RADIUS + 3, 360 - angle);
+      const outer = polarToCartesian(CENTER, CENTER, RADIUS + (isHour ? 15 : 11), 360 - angle);
       marks.push(
         <line
           key={i}
@@ -74,7 +76,7 @@ export const AnalogTimer: React.FC<{ totalSeconds: number }> = ({ totalSeconds }
           y1={inner.y}
           x2={outer.x}
           y2={outer.y}
-          stroke={isHour ? '#333' : '#999'}
+          stroke={isHour ? '#222' : '#bbb'}
           strokeWidth={isHour ? 2 : 1}
         />
       );
@@ -88,15 +90,17 @@ export const AnalogTimer: React.FC<{ totalSeconds: number }> = ({ totalSeconds }
       // Counter-clockwise numbering: 0, 5, 10, ..., 55
       const value = (i * 5) % 60;
       const angle = i * 30;
-      const pos = polarToCartesian(CENTER, CENTER, RADIUS - 24, 360 - angle);
+      // Move numbers further outside the clockface
+      const pos = polarToCartesian(CENTER, CENTER, RADIUS + 44, 360 - angle);
       numbers.push(
         <text
           key={i}
           x={pos.x}
-          y={pos.y + 4}
+          y={pos.y + 8}
           textAnchor="middle"
-          fontSize="12"
-          fill="#333"
+          fontSize="15"
+          fill="#222"
+          style={{ fontFamily: 'Figtree, sans-serif', letterSpacing: 1, fontWeight: 'normal' }}
         >
           {value === 0 ? '0' : value}
         </text>
@@ -126,7 +130,7 @@ export const AnalogTimer: React.FC<{ totalSeconds: number }> = ({ totalSeconds }
       ctx.moveTo(CENTER, CENTER);
       ctx.arc(CENTER, CENTER, RADIUS, startAngle, endAngle, true);
       ctx.closePath();
-      ctx.fillStyle = 'rgba(65, 169, 105, 0.85)';
+      ctx.fillStyle = GREEN_COLOR;
       ctx.fill();
       ctx.restore();
     }
@@ -150,22 +154,22 @@ export const AnalogTimer: React.FC<{ totalSeconds: number }> = ({ totalSeconds }
   return (
     <div className="flex flex-col items-center justify-center">
       <audio ref={audioRef} src="/sounds/timer_up_sound.mp3" preload="auto" />
-      <div style={{ position: 'relative', width: 220, height: 220 }} className="mb-4">
+      <div style={{ position: 'relative', width: 370, height: 370, overflow: 'visible' }} className="mb-8">
         {/* SVG for clock face and marks (z-index: 2) */}
-        <svg width="220" height="220" style={{ position: 'absolute', left: 0, top: 0, zIndex: 2, pointerEvents: 'none' }}>
+        <svg width="370" height="370" style={{ position: 'absolute', left: 0, top: 0, zIndex: 2, pointerEvents: 'none', overflow: 'visible' }}>
           {/* Clock outline */}
-          <circle cx={CENTER} cy={CENTER} r={RADIUS} stroke="#ccc" strokeWidth="2" fill="white" />
+          <circle cx={CENTER} cy={CENTER} r={RADIUS} stroke="#e5e7eb" strokeWidth="4" fill="#fff" />
           {/* Clock face */}
           {renderClockMarks()}
           {renderClockNumbers()}
           {/* Center knob mimic */}
-          <circle cx={CENTER} cy={CENTER} r={8} fill="#bbb" />
+          <circle cx={CENTER} cy={CENTER} r={10} fill={GREEN_COLOR} stroke="#fff" strokeWidth="1" />
         </svg>
-        {/* Canvas for green sector (z-index: 3, on top) */}
+        {/* Canvas for green/red sector (z-index: 3, on top) */}
         <canvas
           ref={canvasRef}
-          width={220}
-          height={220}
+          width={370}
+          height={370}
           style={{ position: 'absolute', left: 0, top: 0, zIndex: 3, pointerEvents: 'none' }}
         />
       </div>
