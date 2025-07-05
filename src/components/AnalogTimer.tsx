@@ -1,6 +1,21 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useTaskContext } from './TaskContext';
 
+/**
+ * AnalogTimer is a modern, visually accurate analog timer component (like a Time Timer).
+ *
+ * Features:
+ * - Green sector for remaining time, red sector for overtime (drawn with Canvas)
+ * - SVG clock face with numbers/marks, modern look, correct layering
+ * - Center knob and needle, color logic, always on top
+ * - Custom timer-up sound
+ * - Timer can be set by dragging the green sector edge
+ * - Start/Pause, Reset/End Session buttons
+ * - Timer, time display, and buttons are perfectly centered
+ * - Disables drag/selection while running
+ * - Integrates with TaskContext for session tracking
+ */
+
 const RADIUS = 120;
 const CENTER = 150;
 const CLOCK_DURATION = 60 * 60; // 60 minutes (in seconds)

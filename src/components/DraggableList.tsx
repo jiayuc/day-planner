@@ -1,5 +1,24 @@
 import React from 'react';
 
+/**
+ * DraggableList is a generic React component for rendering a list of items that can be reordered via drag-and-drop.
+ *
+ * Props:
+ * - items: Array of items to display.
+ * - onReorder: Callback called with the new item order after a drag-and-drop.
+ * - renderItem: Function to render each item. Receives (item, idx, dragHandleProps).
+ * - getKey: Function to get a unique key for each item.
+ *
+ * Usage:
+ * <DraggableList
+ *   items={tasks}
+ *   onReorder={setTasks}
+ *   getKey={item => item.id}
+ *   renderItem={(item, idx, dragHandleProps) => (
+ *     <div {...dragHandleProps}>{item.name}</div>
+ *   )}
+ * />
+ */
 export interface DraggableListProps<T> {
   items: T[];
   onReorder: (newItems: T[]) => void;
@@ -8,15 +27,16 @@ export interface DraggableListProps<T> {
 }
 
 export function DraggableList<T>({ items, onReorder, renderItem, getKey }: DraggableListProps<T>) {
+  // Index of the item being dragged
   const [draggedIdx, setDraggedIdx] = React.useState<number | null>(null);
+  // Index of the item currently hovered over
   const [overIdx, setOverIdx] = React.useState<number | null>(null);
 
-  const handleDragStart = (idx: number) => {
-    setDraggedIdx(idx);
-  };
-  const handleDragOver = (idx: number) => {
-    setOverIdx(idx);
-  };
+  // Start dragging an item
+  const handleDragStart = (idx: number) => setDraggedIdx(idx);
+  // Track which item is being hovered over
+  const handleDragOver = (idx: number) => setOverIdx(idx);
+  // Handle drop event to reorder items
   const handleDrop = (idx: number) => {
     if (draggedIdx === null || draggedIdx === idx) {
       setDraggedIdx(null);
@@ -30,6 +50,7 @@ export function DraggableList<T>({ items, onReorder, renderItem, getKey }: Dragg
     setDraggedIdx(null);
     setOverIdx(null);
   };
+
   return (
     <ul className="flex flex-col gap-3">
       {items.map((item, idx) => (

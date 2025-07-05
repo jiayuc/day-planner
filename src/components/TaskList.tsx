@@ -2,6 +2,18 @@ import React, { useState } from 'react';
 import { useTaskContext, Task } from './TaskContext';
 import { DraggableList } from './DraggableList';
 
+/**
+ * TaskList displays the list of tasks, allows adding, marking as done, deleting, and reordering tasks.
+ *
+ * Features:
+ * - Add new tasks with an input box
+ * - Mark tasks as done (with checkmark and strikethrough)
+ * - Delete tasks
+ * - Drag-and-drop reordering (via DraggableList)
+ * - Shows all session start/end times for each task
+ * - Highlights selected and ongoing tasks
+ * - Disables selection and editing while timer is running
+ */
 function formatSessionTime(date: Date) {
   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }

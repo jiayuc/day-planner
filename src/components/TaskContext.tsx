@@ -1,5 +1,19 @@
 import React, { createContext, useContext, useState } from 'react';
 
+/**
+ * TaskContext provides global state and actions for managing tasks and their sessions.
+ *
+ * Features:
+ * - Store and update the list of tasks
+ * - Track which task is selected
+ * - Track if a session (timer) is ongoing
+ * - Add, delete, and reorder tasks
+ * - Start and end work sessions for tasks
+ *
+ * Usage:
+ *   Wrap your app in <TaskProvider> and use the useTaskContext() hook in components.
+ */
+
 export interface TaskSession {
   start: Date;
   end: Date | null;
@@ -31,6 +45,9 @@ const initialTasks: Task[] = [
   { id: 3, name: 'Get feedback 🎉', sessions: [] },
 ];
 
+/**
+ * TaskProvider wraps your app and provides task state and actions via context.
+ */
 export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -112,6 +129,10 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
+/**
+ * useTaskContext is a custom hook to access the task context.
+ * Throws if used outside of TaskProvider.
+ */
 export const useTaskContext = () => {
   const ctx = useContext(TaskContext);
   if (!ctx) throw new Error('useTaskContext must be used within TaskProvider');
