@@ -35,10 +35,19 @@ const CLOCK_FONT = 'Figtree, sans-serif';
 
 export const AnalogTimer: React.FC<{ totalSeconds?: number }> = ({ totalSeconds: initialTotalSeconds = 1500 }) => {
   const { selectedId, startSession, endSession, isTaskOngoing } = useTaskContext();
-  const [totalSeconds, setTotalSeconds] = useState(initialTotalSeconds); // allow user to set
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  const [running, setRunning] = useState(false);
-  const [dinged, setDinged] = useState(false);
+  const getLocal = (key: string, fallback: any) => {
+    try {
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    } catch {
+      return fallback;
+    }
+  };
+
+  const [totalSeconds, setTotalSeconds] = useState(() => getLocal('timer_totalSeconds', initialTotalSeconds));
+  const [elapsedSeconds, setElapsedSeconds] = useState(() => getLocal('timer_elapsedSeconds', 0));
+  const [running, setRunning] = useState(() => getLocal('timer_running', false));
+  const [dinged, setDinged] = useState(() => getLocal('timer_dinged', false));
   const [dragging, setDragging] = useState(false);
   const intervalRef = useRef<number | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);

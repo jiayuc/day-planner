@@ -39,11 +39,30 @@ interface TaskContextType {
 
 const TaskContext = createContext<TaskContextType | undefined>(undefined);
 
-const initialTasks: Task[] = [
-  { id: 1, name: 'Research for app idea', sessions: [] },
-  { id: 2, name: 'Build a prototype', sessions: [] },
-  { id: 3, name: 'Get feedback 🎉', sessions: [] },
-];
+// Load tasks (including sessions) from localStorage, or use default
+const loadInitialTasks = (): Task[] => {
+  try {
+    const raw = localStorage.getItem('tasks');
+    if (raw) {
+      // Revive Date objects for session start/end
+      const parsed = JSON.parse(raw);
+      return parsed.map((task: any) => ({
+        ...task,
+        sessions: task.sessions.map((s: any) => ({
+          start: new Date(s.start),
+          end: s.end ? new Date(s.end) : null,
+        })),
+      }));
+    }
+  } catch {}
+  return [
+    { id: 1, name: 'Research for app idea', sessions: [] },
+    { id: 2, name: 'Build a prototype', sessions: [] },
+    { id: 3, name: 'Get feedback 🎉', sessions: [] },
+  ];
+};
+
+const initialTasks: Task[] = loadInitialTasks();
 
 /**
  * TaskProvider wraps your app and provides task state and actions via context.
@@ -109,6 +128,18 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const reorderTasks = (newTasks: Task[]) => {
     setTasks(newTasks);
   };
+
+  React.useEffect(() => {
+    // Convert Date objects to ISO strings for storage
+    const tasksToStore = tasks.map(task => ({
+      ...task,
+      sessions: task.sessions.map(s => ({
+        start: s.start instanceof Date ? s.start.toISOString() : s.start,
+        end: s.end instanceof Date ? s.end.toISOString() : s.end,
+      })),
+    }));
+    localStorage.setItem('tasks', JSON.stringify(tasksToStore));
+  }, [tasks]);
 
   return (
     <TaskContext.Provider
