@@ -260,7 +260,7 @@ export const AnalogTimer: React.FC<{ totalSeconds?: number }> = ({ totalSeconds:
   }, [remaining, totalSeconds, overtime]);
 
   return (
-    <div className="flex flex-col items-center justify-center w-full">
+    <div id="analog-timer-container" className="flex flex-col items-center justify-center">
       <div
         id="timer-interactive-layer"
         className="mb-8 flex items-center justify-center"
@@ -341,11 +341,9 @@ export const AnalogTimer: React.FC<{ totalSeconds?: number }> = ({ totalSeconds:
           })()}
         </svg>
       </div>
-
       <div className="text-2xl font-mono mb-4 text-center" style={{ width: TIMER_SIZE }}>
         {remaining > 0 ? formatTime(remaining) : `+${formatTime(overtime)}`}
       </div>
-
       <div className="flex gap-4 justify-center items-center mt-2" style={{ width: TIMER_SIZE }}>
         <button
           className={
