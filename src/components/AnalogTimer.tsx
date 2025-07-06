@@ -143,26 +143,28 @@ export const AnalogTimer: React.FC<{ totalSeconds?: number }> = ({ totalSeconds:
 
   return (
     <div id="analog-timer-container" className="flex flex-col items-center justify-center">
-      <TimerDisplay
-        totalSeconds={totalSeconds}
-        elapsedSeconds={elapsedSeconds}
-        running={running}
-        dragging={dragging}
-        isTaskOngoing={isTaskOngoing}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-      />
+      <div className="w-full max-w-[370px] min-w-[280px] aspect-square relative">
+        <TimerDisplay
+          totalSeconds={totalSeconds}
+          elapsedSeconds={elapsedSeconds}
+          running={running}
+          dragging={dragging}
+          isTaskOngoing={isTaskOngoing}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+        />
+      </div>
       
-      <div className="text-2xl font-mono mb-4 text-center" style={{ width: TIMER_SIZE }}>
+      <div className="text-lg sm:text-xl lg:text-2xl font-mono mb-4 text-center w-full">
         {remaining > 0 ? formatTime(remaining) : `+${formatTime(overtime)}`}
       </div>
-      <div className="flex gap-4 justify-center items-center mt-2" style={{ width: TIMER_SIZE }}>
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center mt-2 w-full">
         <button
           className={
             running
-              ? "relative bg-yellow-500 text-white px-6 py-2 rounded-full shadow-md transition-all duration-150 hover:bg-yellow-600 active:scale-95 active:shadow-inner focus:outline-none focus:ring-2 focus:ring-yellow-600 focus:ring-offset-2"
-              : "relative bg-green-500 text-white px-6 py-2 rounded-full shadow-md transition-all duration-150 hover:bg-green-600 active:scale-95 active:shadow-inner focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2"
+              ? "relative bg-yellow-500 text-white px-4 sm:px-6 py-2 rounded-full shadow-md transition-all duration-150 hover:bg-yellow-600 active:scale-95 active:shadow-inner focus:outline-none focus:ring-2 focus:ring-yellow-600 focus:ring-offset-2 w-full sm:w-auto"
+              : "relative bg-green-500 text-white px-4 sm:px-6 py-2 rounded-full shadow-md transition-all duration-150 hover:bg-green-600 active:scale-95 active:shadow-inner focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 w-full sm:w-auto"
           }
           onClick={() => {
             notificationManagerRef.current?.markUserInteraction();
@@ -173,7 +175,7 @@ export const AnalogTimer: React.FC<{ totalSeconds?: number }> = ({ totalSeconds:
         </button>
         {running ? (
           <button
-            className="relative bg-green-500 text-white px-6 py-2 rounded-full shadow-md transition-all duration-150 hover:bg-green-600 active:scale-95 active:shadow-inner focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2"
+            className="relative bg-green-500 text-white px-4 sm:px-6 py-2 rounded-full shadow-md transition-all duration-150 hover:bg-green-600 active:scale-95 active:shadow-inner focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 w-full sm:w-auto"
             onClick={() => {
               notificationManagerRef.current?.markUserInteraction();
               setRunning(false);
@@ -185,7 +187,7 @@ export const AnalogTimer: React.FC<{ totalSeconds?: number }> = ({ totalSeconds:
           </button>
         ) : (
           <button
-            className="relative bg-gray-200 text-gray-700 px-6 py-2 rounded shadow-md transition-all duration-150 hover:bg-gray-300 active:scale-95 active:shadow-inner focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
+            className="relative bg-gray-200 text-gray-700 px-4 sm:px-6 py-2 rounded shadow-md transition-all duration-150 hover:bg-gray-300 active:scale-95 active:shadow-inner focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 w-full sm:w-auto"
             onClick={() => {
               notificationManagerRef.current?.markUserInteraction();
               setRunning(false);

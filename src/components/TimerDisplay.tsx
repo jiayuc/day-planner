@@ -179,11 +179,11 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({
   return (
     <div
       id="timer-interactive-layer"
-      className="mb-8 flex items-center justify-center"
+      className="mb-8 flex items-center justify-center w-full h-full"
       style={{
         position: 'relative',
-        width: TIMER_SIZE,
-        height: TIMER_SIZE,
+        width: '100%',
+        height: '100%',
         overflow: 'visible',
         touchAction: 'none',
         ...(isTaskOngoing ? { pointerEvents: 'none', opacity: 0.7 } : {})
@@ -194,7 +194,12 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({
       aria-disabled={isTaskOngoing}
     >
       {/* 1. SVG for clock face and marks (lowest layer) */}
-      <svg width={TIMER_SIZE} height={TIMER_SIZE} style={{ position: 'absolute', left: 0, top: 0, zIndex: 1, pointerEvents: 'none', overflow: 'visible' }}>
+      <svg 
+        width="100%" 
+        height="100%" 
+        viewBox={`0 0 ${TIMER_SIZE} ${TIMER_SIZE}`}
+        style={{ position: 'absolute', left: 0, top: 0, zIndex: 1, pointerEvents: 'none', overflow: 'visible' }}
+      >
         {/* Clock outline */}
         <circle cx={CENTER} cy={CENTER} r={RADIUS} stroke="#e5e7eb" strokeWidth="4" fill="#fff" />
         {renderClockMarks()}
@@ -206,11 +211,24 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({
         ref={canvasRef}
         width={TIMER_SIZE}
         height={TIMER_SIZE}
-        style={{ position: 'absolute', left: 0, top: 0, zIndex: 2, pointerEvents: 'none' }}
+        style={{ 
+          position: 'absolute', 
+          left: 0, 
+          top: 0, 
+          zIndex: 2, 
+          pointerEvents: 'none',
+          width: '100%',
+          height: '100%'
+        }}
       />
 
       {/* 3. SVG for center knob and needle (topmost layer) */}
-      <svg width={TIMER_SIZE} height={TIMER_SIZE} style={{ position: 'absolute', left: 0, top: 0, zIndex: 3, pointerEvents: 'none', overflow: 'visible' }}>
+      <svg 
+        width="100%" 
+        height="100%" 
+        viewBox={`0 0 ${TIMER_SIZE} ${TIMER_SIZE}`}
+        style={{ position: 'absolute', left: 0, top: 0, zIndex: 3, pointerEvents: 'none', overflow: 'visible' }}
+      >
         {renderNeedleAndKnob()}
       </svg>
     </div>

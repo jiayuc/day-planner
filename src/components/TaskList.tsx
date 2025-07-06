@@ -51,10 +51,10 @@ export const TaskList: React.FC = () => {
 
   return (
     <div
-      className="w-[820px] bg-white rounded-3xl shadow-xl p-8 flex flex-col gap-6 font-casual"
+      className="w-full max-w-[820px] bg-white rounded-3xl shadow-xl p-4 sm:p-6 lg:p-8 flex flex-col gap-4 sm:gap-6 font-casual"
       style={{ minHeight: 520 }}
     >
-      <h2 className="text-2xl font-bold mb-1 text-gray-900 flex items-center gap-2 font-sans">
+      <h2 className="text-xl sm:text-2xl font-bold mb-1 text-gray-900 flex items-center gap-2 font-sans">
         To-Do List 
         <svg 
           xmlns="http://www.w3.org/2000/svg" 
@@ -72,9 +72,9 @@ export const TaskList: React.FC = () => {
           />
         </svg>
       </h2>
-      <div className="flex items-center gap-3 mb-2">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-2">
         <input
-          className="flex-1 bg-gray-100 rounded-full px-5 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-blue-300 placeholder-gray-400"
+          className="flex-1 bg-gray-100 rounded-full px-4 sm:px-5 py-3 text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-300 placeholder-gray-400"
           placeholder="Add your task"
           value={input}
           onChange={e => setInput(e.target.value)}
@@ -82,7 +82,7 @@ export const TaskList: React.FC = () => {
           disabled={isTaskOngoing}
         />
         <button
-          className="ml-2 bg-[#ff5c4d] hover:bg-[#ff3b2e] text-white font px-8 py-3 rounded-full text-lg transition-all duration-150 shadow-md focus:outline-none focus:ring-2 focus:ring-[#ff5c4d] focus:ring-offset-2"
+          className="sm:ml-2 bg-[#ff5c4d] hover:bg-[#ff3b2e] text-white font px-6 sm:px-8 py-3 rounded-full text-base sm:text-lg transition-all duration-150 shadow-md focus:outline-none focus:ring-2 focus:ring-[#ff5c4d] focus:ring-offset-2 whitespace-nowrap"
           onClick={handleAdd}
           disabled={isTaskOngoing || !input.trim()}
         >

@@ -7,10 +7,14 @@ import { TaskProvider } from './components/TaskContext';
 function App() {
   return (
     <TaskProvider>
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="flex gap-16 items-start">
-          <AnalogTimer totalSeconds={60 * 0.1} />
-          <TaskList />
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+        <div className="flex flex-col lg:flex-row gap-8 lg:gap-16 items-center justify-center w-full max-w-7xl">
+          <div className="flex justify-center min-w-0">
+            <AnalogTimer totalSeconds={60 * 0.1} />
+          </div>
+          <div className="flex justify-center min-w-0">
+            <TaskList />
+          </div>
         </div>
       </div>
     </TaskProvider>
