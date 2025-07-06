@@ -17,8 +17,9 @@ import { createTimerNotificationManager, TimerNotificationManager } from '../uti
  * - Integrates with TaskContext for session tracking
  */
 
+const TIMER_SIZE = 370; // Timer container size (width and height)
 const RADIUS = 120;
-const CENTER = 150;
+const CENTER = TIMER_SIZE / 2; // Dynamic center calculation
 const CLOCK_DURATION = 60 * 60; // 60 minutes (in seconds)
 
 const formatTime = (seconds: number) => {
@@ -262,17 +263,13 @@ export const AnalogTimer: React.FC<{ totalSeconds?: number }> = ({ totalSeconds:
     <div className="flex flex-col items-center justify-center w-full">
       <div
         id="timer-interactive-layer"
-        className="mb-8"
+        className="mb-8 flex items-center justify-center"
         style={{
           position: 'relative',
-          width: 370,
-          height: 370,
+          width: TIMER_SIZE,
+          height: TIMER_SIZE,
           overflow: 'visible',
           touchAction: 'none',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          margin: '0 auto',
           ...(isTaskOngoing ? { pointerEvents: 'none', opacity: 0.7 } : {})
         }}
         onPointerDown={isTaskOngoing ? undefined : handlePointerDown}
@@ -281,7 +278,7 @@ export const AnalogTimer: React.FC<{ totalSeconds?: number }> = ({ totalSeconds:
         aria-disabled={isTaskOngoing}
       >
         {/* 1. SVG for clock face and marks (lowest layer) */}
-        <svg width="370" height="370" style={{ position: 'absolute', left: 0, top: 0, zIndex: 1, pointerEvents: 'none', overflow: 'visible' }}>
+        <svg width={TIMER_SIZE} height={TIMER_SIZE} style={{ position: 'absolute', left: 0, top: 0, zIndex: 1, pointerEvents: 'none', overflow: 'visible' }}>
           {/* Clock outline */}
           <circle cx={CENTER} cy={CENTER} r={RADIUS} stroke="#e5e7eb" strokeWidth="4" fill="#fff" />
           {renderClockMarks()}
@@ -291,13 +288,13 @@ export const AnalogTimer: React.FC<{ totalSeconds?: number }> = ({ totalSeconds:
         {/* 2. Canvas for green/red sector (middle layer) */}
         <canvas
           ref={canvasRef}
-          width={370}
-          height={370}
+          width={TIMER_SIZE}
+          height={TIMER_SIZE}
           style={{ position: 'absolute', left: 0, top: 0, zIndex: 2, pointerEvents: 'none' }}
         />
 
         {/* 3. SVG for center knob and needle (topmost layer) */}
-        <svg width="370" height="370" style={{ position: 'absolute', left: 0, top: 0, zIndex: 3, pointerEvents: 'none', overflow: 'visible' }}>
+        <svg width={TIMER_SIZE} height={TIMER_SIZE} style={{ position: 'absolute', left: 0, top: 0, zIndex: 3, pointerEvents: 'none', overflow: 'visible' }}>
           {/* Needle and knob, plus drag handle for setting timer */}
           {(() => {
             const getNeedleAndKnobColor = () => (remaining > 0 ? DARK_GREEN_COLOR : DARK_RED_COLOR);
@@ -345,11 +342,11 @@ export const AnalogTimer: React.FC<{ totalSeconds?: number }> = ({ totalSeconds:
         </svg>
       </div>
 
-      <div className="text-2xl font-mono mb-4">
+      <div className="text-2xl font-mono mb-4 text-center" style={{ width: TIMER_SIZE }}>
         {remaining > 0 ? formatTime(remaining) : `+${formatTime(overtime)}`}
       </div>
 
-      <div className="flex gap-4 justify-center items-center mt-2" style={{ width: 370 }}>
+      <div className="flex gap-4 justify-center items-center mt-2" style={{ width: TIMER_SIZE }}>
         <button
           className={
             running

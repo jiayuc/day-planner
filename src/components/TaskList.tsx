@@ -51,7 +51,7 @@ export const TaskList: React.FC = () => {
 
   return (
     <div
-      className="w-[410px] bg-white rounded-3xl shadow-xl p-8 flex flex-col gap-6 font-casual"
+      className="w-[820px] bg-white rounded-3xl shadow-xl p-8 flex flex-col gap-6 font-casual"
       style={{ minHeight: 520 }}
     >
       <h2 className="text-2xl font-bold mb-1 text-gray-900 flex items-center gap-2 font-sans">
@@ -83,7 +83,7 @@ export const TaskList: React.FC = () => {
           const isOngoing = isSelected && isTaskOngoing;
           const isDone = doneIds.has(task.id);
           return (
-            <div className="flex items-center group pr-2" {...dragHandleProps}>
+            <div className="flex items-center group w-full py-3 px-2 hover:bg-gray-50 rounded-lg transition-all duration-150" {...dragHandleProps}>
               <button
                 className={`flex-shrink-0 w-7 h-7 rounded-full border-2 flex items-center justify-center mr-4 transition-all duration-150
                   ${isDone ? 'bg-[#ff5c4d] border-[#ff5c4d]' : 'bg-white border-gray-400 hover:border-[#ff5c4d]'}
@@ -99,17 +99,16 @@ export const TaskList: React.FC = () => {
                   </svg>
                 )}
               </button>
-              <button
-                className={`flex-1 text-left text-lg font-medium px-2 py-3 rounded-lg transition-all duration-150 border focus:outline-none focus:ring-2 focus:ring-offset-2
+              <div
+                className={`flex-1 text-left text-lg font-medium py-2 cursor-pointer transition-all duration-150
                   ${isOngoing
-                    ? 'bg-green-100 border-green-400 ring-2 ring-green-400 text-green-700 shadow'
+                    ? 'text-green-700 bg-green-100 px-3 py-2 rounded-lg border-l-4 border-green-400'
                     : isSelected
-                    ? 'bg-blue-100 border-blue-400 ring-2 ring-blue-400 text-blue-700 shadow'
-                    : 'bg-white border-gray-200 hover:bg-gray-100 text-gray-900'}
+                    ? 'text-blue-700 bg-blue-100 px-3 py-2 rounded-lg border-l-4 border-blue-400'
+                    : 'text-gray-900 hover:text-gray-700'}
                   ${isDone ? 'line-through text-gray-400' : ''}
                 `}
                 onClick={() => !isTaskOngoing && setSelectedId(task.id)}
-                disabled={isTaskOngoing}
               >
                 {task.name}
                 {task.sessions.length > 0 && (
@@ -121,7 +120,7 @@ export const TaskList: React.FC = () => {
                     ))}
                   </div>
                 )}
-              </button>
+              </div>
               <button
                 className="ml-3 text-gray-300 hover:text-gray-500 text-2xl font-bold px-2 opacity-80 group-hover:opacity-100 transition-all duration-100"
                 style={{ lineHeight: 1 }}

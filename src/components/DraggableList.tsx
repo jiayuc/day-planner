@@ -52,7 +52,7 @@ export function DraggableList<T>({ items, onReorder, renderItem, getKey }: Dragg
   };
 
   return (
-    <ul className="flex flex-col gap-3">
+    <ul className="flex flex-col">
       {items.map((item, idx) => (
         <li
           key={getKey(item)}
@@ -61,8 +61,8 @@ export function DraggableList<T>({ items, onReorder, renderItem, getKey }: Dragg
           onDragOver={e => { e.preventDefault(); handleDragOver(idx); }}
           onDrop={() => handleDrop(idx)}
           onDragEnd={() => { setDraggedIdx(null); setOverIdx(null); }}
-          className={`transition-all duration-150 bg-white rounded-xl shadow border border-gray-200 px-2 ${
-            overIdx === idx && draggedIdx !== null ? 'ring-2 ring-blue-300' : ''
+          className={`transition-all duration-150 px-2 py-2 ${
+            overIdx === idx && draggedIdx !== null ? 'bg-blue-50 ring-2 ring-blue-300 rounded-lg' : ''
           }`}
           style={{ cursor: 'grab', opacity: draggedIdx === idx ? 0.5 : 1 }}
         >
