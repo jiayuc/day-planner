@@ -2,12 +2,32 @@
 
 A modern day planner with a visual timer and task management.
 
+## Features
+
+- **Visual Timer**: Analog timer with green/red sectors showing remaining/overtime
+- **Task Management**: Add, reorder, and track tasks with drag-and-drop
+- **Session Tracking**: Records start/end times for each work session
+- **Cumulative Time**: Shows total time spent on each task across all sessions (e.g., "1h 20m")
+- **Bell Animation**: Lottie animation when timer completes
+- **Responsive Design**: Works on mobile, tablet, and desktop
+
 ## Development
 
 ```bash
 npm install
+
+# Development server (hot reload, dev tools, 3-second timer)
 npm run dev
+
+# Production preview server (production build, 15-minute timer)
+npm run build
+npm run preview
 ```
+
+### Development vs Production Locally
+
+- **`npm run dev`**: Development mode with hot reload, dev tools panel, 3-second default timer
+- **`npm run preview`**: Serves the production build locally (15-minute default timer, no dev tools)
 
 ### Development Features
 
@@ -40,11 +60,20 @@ window.devUtils.logStorage()
 
 // Set timer for testing (in seconds)
 window.devUtils.setTestTimer(10)
+
+// Add test sessions to a task (for testing cumulative time)
+window.devUtils.addTestSessions('task', 3) // adds 3 sessions to first task containing 'task'
 ```
 
 ## Production Build
 
 ```bash
-# generate compiled files for hosting website
+# Build for production
+npm run build
+
+# Preview production build locally (optional)
+npm run preview
+
+# Deploy: generate compiled files for hosting website
 npm run build && rm -rf docs && mv dist docs
 ```

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTaskContext, Task } from './TaskContext';
 import { DraggableList } from './DraggableList';
+import { getTaskCumulativeTime } from '../utils/time';
 
 /**
  * TaskList displays the list of tasks, allows adding, marking as done, deleting, and reordering tasks.
@@ -126,6 +127,15 @@ export const TaskList: React.FC = () => {
                 onClick={() => !isTaskOngoing && setSelectedId(task.id)}
               >
                 {task.name}
+                
+                {/* Show cumulative time if any sessions exist */}
+                {task.sessions.length > 0 && (
+                  <div className="mt-1 text-xs text-gray-600 font-medium">
+                    Total: {getTaskCumulativeTime(task.sessions)}
+                  </div>
+                )}
+                
+                {/* Show individual session times */}
                 {task.sessions.length > 0 && (
                   <div className="mt-1 text-xs text-gray-500 space-y-1">
                     {task.sessions.map((s, i) => (

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
+import { getTaskCumulativeTime, calculateTotalTimeMs } from '../utils/time';
 
 /**
  * TaskContext provides global state and actions for managing tasks and their sessions.
@@ -35,6 +36,8 @@ interface TaskContextType {
   addTask: (name: string) => void;
   deleteTask: (id: number) => void;
   reorderTasks: (newTasks: Task[]) => void;
+  getTaskCumulativeTime: (taskId: number) => string;
+  getTaskTotalTimeMs: (taskId: number) => number;
 }
 
 const TaskContext = createContext<TaskContextType | undefined>(undefined);
@@ -130,6 +133,18 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setTasks(newTasks);
   };
 
+  // Get cumulative time for a specific task (formatted string)
+  const getTaskCumulativeTimeForId = (taskId: number): string => {
+    const task = tasks.find(t => t.id === taskId);
+    return task ? getTaskCumulativeTime(task.sessions) : '0m';
+  };
+
+  // Get total time in milliseconds for a specific task
+  const getTaskTotalTimeMsForId = (taskId: number): number => {
+    const task = tasks.find(t => t.id === taskId);
+    return task ? calculateTotalTimeMs(task.sessions) : 0;
+  };
+
   React.useEffect(() => {
     // Convert Date objects to ISO strings for storage
     const tasksToStore = tasks.map(task => ({
@@ -154,6 +169,8 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
         addTask,
         deleteTask,
         reorderTasks,
+        getTaskCumulativeTime: getTaskCumulativeTimeForId,
+        getTaskTotalTimeMs: getTaskTotalTimeMsForId,
       }}
     >
       {children}

@@ -75,6 +75,19 @@ export const DevTools: React.FC = () => {
             </button>
           </div>
         </div>
+        
+        <div className="pt-2 border-t border-gray-600">
+          <p className="text-xs text-gray-300 mb-2">Test Cumulative Time:</p>
+          <div className="grid grid-cols-1 gap-1">
+            <button
+              onClick={() => devUtils.addTestSessions('task', 3)}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-2 py-1 rounded transition-colors"
+              title="Add 3 test sessions to first task (for testing cumulative time)"
+            >
+              Add Test Sessions
+            </button>
+          </div>
+        </div>
       </div>
       
       <p className="text-xs text-gray-400 mt-3">

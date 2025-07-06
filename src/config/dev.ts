@@ -118,7 +118,57 @@ export const devUtils = {
     
     // Reload to apply changes
     window.location.reload();
+  },
+
+  /**
+   * Add test sessions to a task for testing cumulative time (DEV ONLY)
+   */
+  addTestSessions: (taskName: string, sessionCount: number = 3) => {
+    if (!isDevelopment) {
+      console.warn('addTestSessions is only available in development mode');
+      return;
+    }
+
+    try {
+      const tasksRaw = localStorage.getItem('tasks');
+      const tasks = tasksRaw ? JSON.parse(tasksRaw) : [];
+      
+      // Find task by name
+      const taskIndex = tasks.findIndex((t: any) => t.name.toLowerCase().includes(taskName.toLowerCase()));
+      if (taskIndex === -1) {
+        console.warn(`Task containing "${taskName}" not found`);
+        return;
+      }
+
+      // Generate test sessions (each 15-30 minutes apart, in the past)
+      const now = new Date();
+      const testSessions = [];
+      
+      for (let i = 0; i < sessionCount; i++) {
+        // Sessions from 1-4 hours ago, each lasting 15-30 minutes
+        const sessionStart = new Date(now.getTime() - (i + 1) * 60 * 60 * 1000 - Math.random() * 60 * 60 * 1000);
+        const sessionDuration = (15 + Math.random() * 15) * 60 * 1000; // 15-30 minutes
+        const sessionEnd = new Date(sessionStart.getTime() + sessionDuration);
+        
+        testSessions.push({
+          start: sessionStart.toISOString(),
+          end: sessionEnd.toISOString()
+        });
+      }
+
+      // Add sessions to the task
+      tasks[taskIndex].sessions = [...(tasks[taskIndex].sessions || []), ...testSessions];
+      
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+      console.log(`Added ${sessionCount} test sessions to task "${tasks[taskIndex].name}"`);
+      
+      // Reload to see changes
+      window.location.reload();
+    } catch (error) {
+      console.error('Error adding test sessions:', error);
+    }
   }
+
 };
 
 // Make dev utilities available globally in development
