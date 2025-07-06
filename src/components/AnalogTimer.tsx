@@ -3,6 +3,7 @@ import Lottie from 'lottie-react';
 import { useTaskContext } from './TaskContext';
 import { createTimerNotificationManager, TimerNotificationManager } from '../utils/timerNotifications';
 import { TimerDisplay, TIMER_SIZE } from './TimerDisplay';
+import { devConfig } from '../config/dev';
 
 /**
  * AnalogTimer is a modern, visually accurate analog timer component (like a Time Timer).
@@ -30,8 +31,12 @@ const formatTime = (seconds: number) => {
 
 export const AnalogTimer: React.FC<{ totalSeconds?: number }> = ({ totalSeconds: initialTotalSeconds = 1500 }) => {
   const { selectedId, startSession, endSession, isTaskOngoing } = useTaskContext();
+  
   // DEBUG: Log when component renders
-  console.debug('[AnalogTimer] Rendered');
+  if (devConfig.enableDebugLogs) {
+    console.debug('[AnalogTimer] Rendered with initialTotalSeconds:', initialTotalSeconds);
+    console.debug('[AnalogTimer] DevConfig:', devConfig);
+  }
   
   // Initialize notification manager
   const notificationManagerRef = useRef<TimerNotificationManager | null>(null);
@@ -125,7 +130,9 @@ export const AnalogTimer: React.FC<{ totalSeconds?: number }> = ({ totalSeconds:
 
   useEffect(() => {
     if (!dinged && elapsedSeconds === totalSeconds) {
-      console.debug('[AnalogTimer] Timer up! Triggering notification.');
+      if (devConfig.enableDebugLogs) {
+        console.debug('[AnalogTimer] Timer up! Triggering notification.');
+      }
       setDinged(true);
       
       // Use the notification manager to handle all notification strategies
@@ -138,10 +145,10 @@ export const AnalogTimer: React.FC<{ totalSeconds?: number }> = ({ totalSeconds:
       // Start bell animation
       setShowBellAnimation(true);
       
-      // Stop bell animation after 1 minute (60000ms)
+      // Stop bell animation after configured duration
       bellAnimationTimeoutRef.current = window.setTimeout(() => {
         setShowBellAnimation(false);
-      }, 60000);
+      }, devConfig.bellAnimationDuration);
     }
   }, [elapsedSeconds, totalSeconds, dinged]);
 
