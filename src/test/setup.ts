@@ -10,6 +10,31 @@ HTMLCanvasElement.prototype.getContext = vi.fn().mockReturnValue({
   arc: vi.fn(),
   closePath: vi.fn(),
   fill: vi.fn(),
+  fillRect: vi.fn(),
+  strokeRect: vi.fn(),
+  stroke: vi.fn(),
+  drawImage: vi.fn(),
+  getImageData: vi.fn(),
+  putImageData: vi.fn(),
+  createImageData: vi.fn(),
+  setTransform: vi.fn(),
+  resetTransform: vi.fn(),
+  scale: vi.fn(),
+  rotate: vi.fn(),
+  translate: vi.fn(),
+  transform: vi.fn(),
+  globalAlpha: 1,
+  globalCompositeOperation: 'source-over',
+  fillStyle: '#000000',
+  strokeStyle: '#000000',
+  lineWidth: 1,
+  lineCap: 'butt',
+  lineJoin: 'miter',
+  miterLimit: 10,
+  font: '10px sans-serif',
+  textAlign: 'start',
+  textBaseline: 'alphabetic',
+  direction: 'inherit',
 });
 
 // Mock ResizeObserver
@@ -49,4 +74,30 @@ const localStorageMock = {
 };
 Object.defineProperty(window, 'localStorage', {
   value: localStorageMock,
+});
+
+// Mock lottie-web to prevent rendering issues in tests
+vi.mock('lottie-web', () => ({
+  default: {
+    loadAnimation: vi.fn().mockReturnValue({
+      play: vi.fn(),
+      stop: vi.fn(),
+      pause: vi.fn(),
+      destroy: vi.fn(),
+      setSpeed: vi.fn(),
+      setDirection: vi.fn(),
+      goToAndPlay: vi.fn(),
+      goToAndStop: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    }),
+    destroy: vi.fn(),
+  },
+}));
+
+// Mock fetch for loading animation files
+global.fetch = vi.fn().mockResolvedValue({
+  ok: false,
+  json: () => Promise.resolve({}),
+  text: () => Promise.resolve(''),
 });

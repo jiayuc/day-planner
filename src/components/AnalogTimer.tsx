@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import Lottie from 'lottie-react';
 import { useTaskContext } from './TaskContext';
 import { createTimerNotificationManager, TimerNotificationManager } from '../utils/timerNotifications';
 import { TimerDisplay, TIMER_SIZE } from './TimerDisplay';
@@ -37,8 +38,19 @@ export const AnalogTimer: React.FC<{ totalSeconds?: number }> = ({ totalSeconds:
   
   useEffect(() => {
     notificationManagerRef.current = createTimerNotificationManager('sounds/timer_up_sound.mp3');
+    
+    // Load bell animation data
+    fetch('/day-planner/animations/smiling-bell-ring.json')
+      .then(response => response.json())
+      .then(data => setBellAnimationData(data))
+      .catch(error => console.warn('Failed to load bell animation:', error));
+    
     return () => {
       notificationManagerRef.current?.destroy();
+      // Clean up bell animation timeout
+      if (bellAnimationTimeoutRef.current) {
+        clearTimeout(bellAnimationTimeoutRef.current);
+      }
     };
   }, []);
 
@@ -55,8 +67,11 @@ export const AnalogTimer: React.FC<{ totalSeconds?: number }> = ({ totalSeconds:
   const [elapsedSeconds, setElapsedSeconds] = useState(() => getLocal('timer_elapsedSeconds', 0));
   const [running, setRunning] = useState(() => getLocal('timer_running', false));
   const [dinged, setDinged] = useState(() => getLocal('timer_dinged', false));
+  const [showBellAnimation, setShowBellAnimation] = useState(false);
+  const [bellAnimationData, setBellAnimationData] = useState(null);
   const [dragging, setDragging] = useState(false);
   const intervalRef = useRef<number | null>(null);
+  const bellAnimationTimeoutRef = useRef<number | null>(null);
 
   const remaining = Math.max(totalSeconds - elapsedSeconds, 0);
   const overtime = Math.max(elapsedSeconds - totalSeconds, 0);
@@ -119,6 +134,14 @@ export const AnalogTimer: React.FC<{ totalSeconds?: number }> = ({ totalSeconds:
         body: 'Your timer has finished.',
         icon: '/favicon.ico'
       });
+
+      // Start bell animation
+      setShowBellAnimation(true);
+      
+      // Stop bell animation after 1 minute (60000ms)
+      bellAnimationTimeoutRef.current = window.setTimeout(() => {
+        setShowBellAnimation(false);
+      }, 60000);
     }
   }, [elapsedSeconds, totalSeconds, dinged]);
 
@@ -141,8 +164,34 @@ export const AnalogTimer: React.FC<{ totalSeconds?: number }> = ({ totalSeconds:
     localStorage.setItem('timer_dinged', JSON.stringify(dinged));
   }, [totalSeconds, elapsedSeconds, running, dinged]);
 
+  // Helper function to reset timer and stop bell animation
+  const resetTimer = () => {
+    notificationManagerRef.current?.markUserInteraction();
+    setRunning(false);
+    setElapsedSeconds(0);
+    setDinged(false);
+    setShowBellAnimation(false);
+    
+    // Clear any pending bell animation timeout
+    if (bellAnimationTimeoutRef.current) {
+      clearTimeout(bellAnimationTimeoutRef.current);
+      bellAnimationTimeoutRef.current = null;
+    }
+  };
+
   return (
     <div id="analog-timer-container" className="flex flex-col items-center justify-center">
+        {/* Bell Animation - positioned in top-left corner */}
+        {showBellAnimation && bellAnimationData && (
+          <div className="absolute top-5 left-5 z-10 w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40">
+            <Lottie
+              animationData={bellAnimationData}
+              loop={true}
+              autoplay={true}
+              style={{ width: '100%', height: '100%' }}
+            />
+          </div>
+        )}
       <div className="w-full max-w-[370px] min-w-[280px] aspect-square relative">
         <TimerDisplay
           totalSeconds={totalSeconds}
@@ -176,24 +225,14 @@ export const AnalogTimer: React.FC<{ totalSeconds?: number }> = ({ totalSeconds:
         {running ? (
           <button
             className="relative bg-green-500 text-white px-4 sm:px-6 py-2 rounded-full shadow-md transition-all duration-150 hover:bg-green-600 active:scale-95 active:shadow-inner focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 w-full sm:w-auto"
-            onClick={() => {
-              notificationManagerRef.current?.markUserInteraction();
-              setRunning(false);
-              setElapsedSeconds(0);
-              setDinged(false);
-            }}
+            onClick={resetTimer}
           >
             <span className="font-semibold tracking-wide">End Session</span>
           </button>
         ) : (
           <button
             className="relative bg-gray-200 text-gray-700 px-4 sm:px-6 py-2 rounded shadow-md transition-all duration-150 hover:bg-gray-300 active:scale-95 active:shadow-inner focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 w-full sm:w-auto"
-            onClick={() => {
-              notificationManagerRef.current?.markUserInteraction();
-              setRunning(false);
-              setElapsedSeconds(0);
-              setDinged(false);
-            }}
+            onClick={resetTimer}
           >
             <span className="font-semibold tracking-wide">Reset</span>
           </button>

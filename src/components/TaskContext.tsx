@@ -56,9 +56,10 @@ const loadInitialTasks = (): Task[] => {
     }
   } catch {}
   return [
-    { id: 1, name: 'Research for app idea', sessions: [] },
-    { id: 2, name: 'Build a prototype', sessions: [] },
-    { id: 3, name: 'Get feedback 🎉', sessions: [] },
+    { id: 1, name: 'Write down your tasks', sessions: [] },
+    { id: 2, name: 'Select a task, start a working session', sessions: [] },
+    { id: 3, name: 'Finish the session, repeat the above until your task is done', sessions: [] },
+    { id: 4, name: 'Check off your task as done!', sessions: [] },
   ];
 };
 
