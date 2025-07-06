@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useTaskContext } from './TaskContext';
+import { createTimerNotificationManager, TimerNotificationManager } from '../utils/timerNotifications';
 
 /**
  * AnalogTimer is a modern, visually accurate analog timer component (like a Time Timer).
@@ -35,6 +36,19 @@ const CLOCK_FONT = 'Figtree, sans-serif';
 
 export const AnalogTimer: React.FC<{ totalSeconds?: number }> = ({ totalSeconds: initialTotalSeconds = 1500 }) => {
   const { selectedId, startSession, endSession, isTaskOngoing } = useTaskContext();
+  // DEBUG: Log when component renders
+  console.debug('[AnalogTimer] Rendered');
+  
+  // Initialize notification manager
+  const notificationManagerRef = useRef<TimerNotificationManager | null>(null);
+  
+  useEffect(() => {
+    notificationManagerRef.current = createTimerNotificationManager('sounds/timer_up_sound.mp3');
+    return () => {
+      notificationManagerRef.current?.destroy();
+    };
+  }, []);
+
   const getLocal = (key: string, fallback: any) => {
     try {
       const raw = localStorage.getItem(key);
@@ -50,7 +64,6 @@ export const AnalogTimer: React.FC<{ totalSeconds?: number }> = ({ totalSeconds:
   const [dinged, setDinged] = useState(() => getLocal('timer_dinged', false));
   const [dragging, setDragging] = useState(false);
   const intervalRef = useRef<number | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const remaining = Math.max(totalSeconds - elapsedSeconds, 0);
   const overtime = Math.max(elapsedSeconds - totalSeconds, 0);
@@ -68,6 +81,7 @@ export const AnalogTimer: React.FC<{ totalSeconds?: number }> = ({ totalSeconds:
   // Mouse/touch drag handlers
   const handlePointerDown = (e: React.PointerEvent) => {
     if (running) return;
+    notificationManagerRef.current?.markUserInteraction();
     setDragging(true);
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
   };
@@ -88,17 +102,6 @@ export const AnalogTimer: React.FC<{ totalSeconds?: number }> = ({ totalSeconds:
     (e.target as HTMLElement).releasePointerCapture(e.pointerId);
   };
 
-  // Track session for selected task
-  useEffect(() => {
-    if (running && selectedId != null && !isTaskOngoing) {
-      startSession(selectedId);
-    }
-    if (!running && selectedId != null && isTaskOngoing) {
-      endSession(selectedId);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [running]);
-
   useEffect(() => {
     if (running) {
       intervalRef.current = window.setInterval(() => {
@@ -114,10 +117,36 @@ export const AnalogTimer: React.FC<{ totalSeconds?: number }> = ({ totalSeconds:
 
   useEffect(() => {
     if (!dinged && elapsedSeconds === totalSeconds) {
+      console.debug('[AnalogTimer] Timer up! Triggering notification.');
       setDinged(true);
-      audioRef.current?.play();
+      
+      // Use the notification manager to handle all notification strategies
+      notificationManagerRef.current?.notify({
+        title: 'Timer Up!',
+        body: 'Your timer has finished.',
+        icon: '/favicon.ico'
+      });
     }
   }, [elapsedSeconds, totalSeconds, dinged]);
+
+  // Track session for selected task
+  useEffect(() => {
+    if (running && selectedId != null && !isTaskOngoing) {
+      startSession(selectedId);
+    }
+    if (!running && selectedId != null && isTaskOngoing) {
+      endSession(selectedId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [running]);
+
+  // Save state to localStorage
+  useEffect(() => {
+    localStorage.setItem('timer_totalSeconds', JSON.stringify(totalSeconds));
+    localStorage.setItem('timer_elapsedSeconds', JSON.stringify(elapsedSeconds));
+    localStorage.setItem('timer_running', JSON.stringify(running));
+    localStorage.setItem('timer_dinged', JSON.stringify(dinged));
+  }, [totalSeconds, elapsedSeconds, running, dinged]);
 
   const polarToCartesian = (centerX: number, centerY: number, radius: number, angleInDegrees: number) => {
     const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180.0;
@@ -231,8 +260,6 @@ export const AnalogTimer: React.FC<{ totalSeconds?: number }> = ({ totalSeconds:
 
   return (
     <div className="flex flex-col items-center justify-center w-full">
-      <audio ref={audioRef} src="/sounds/timer_up_sound.mp3" preload="auto" />
-
       <div
         id="timer-interactive-layer"
         className="mb-8"
@@ -329,7 +356,10 @@ export const AnalogTimer: React.FC<{ totalSeconds?: number }> = ({ totalSeconds:
               ? "relative bg-yellow-500 text-white px-6 py-2 rounded-full shadow-md transition-all duration-150 hover:bg-yellow-600 active:scale-95 active:shadow-inner focus:outline-none focus:ring-2 focus:ring-yellow-600 focus:ring-offset-2"
               : "relative bg-green-500 text-white px-6 py-2 rounded-full shadow-md transition-all duration-150 hover:bg-green-600 active:scale-95 active:shadow-inner focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2"
           }
-          onClick={() => setRunning((r) => !r)}
+          onClick={() => {
+            notificationManagerRef.current?.markUserInteraction();
+            setRunning((r) => !r);
+          }}
         >
           <span className="font-semibold tracking-wide">{running ? 'Pause' : 'Start'}</span>
         </button>
@@ -337,6 +367,7 @@ export const AnalogTimer: React.FC<{ totalSeconds?: number }> = ({ totalSeconds:
           <button
             className="relative bg-green-500 text-white px-6 py-2 rounded-full shadow-md transition-all duration-150 hover:bg-green-600 active:scale-95 active:shadow-inner focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2"
             onClick={() => {
+              notificationManagerRef.current?.markUserInteraction();
               setRunning(false);
               setElapsedSeconds(0);
               setDinged(false);
@@ -348,6 +379,7 @@ export const AnalogTimer: React.FC<{ totalSeconds?: number }> = ({ totalSeconds:
           <button
             className="relative bg-gray-200 text-gray-700 px-6 py-2 rounded shadow-md transition-all duration-150 hover:bg-gray-300 active:scale-95 active:shadow-inner focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
             onClick={() => {
+              notificationManagerRef.current?.markUserInteraction();
               setRunning(false);
               setElapsedSeconds(0);
               setDinged(false);
